@@ -7,6 +7,7 @@ import io.restassured.specification.ResponseSpecification;
 
 import static io.restassured.filter.log.LogDetail.*;
 import static io.restassured.http.ContentType.JSON;
+import static io.restassured.http.ContentType.MULTIPART;
 import static qa.avasilev.helpers.CustomAllureListener.withCustomTemplates;
 
 public class UserApiSpec {
@@ -15,7 +16,7 @@ public class UserApiSpec {
             .log(URI)
             .log(HEADERS)
             .log(BODY)
-            .setContentType(JSON)
+            .setContentType(MULTIPART)
             .build();
 
     public static ResponseSpecification responseSpec = new ResponseSpecBuilder()

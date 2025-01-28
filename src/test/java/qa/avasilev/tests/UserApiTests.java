@@ -30,8 +30,10 @@ public class UserApiTests extends TestBase {
         CreateUserPositiveResponseModel postResponse =
                 step(format("Sending POST for user creation with Username '%s', email '%s', password '%s'",
                         newValidUser.getUsername(), newValidUser.getEmail(), newValidUser.getPassword()), () ->
-                        given(requestSpec).
-                                body(newValidUser)
+                        given(requestSpec)
+                                .multiPart("username", newValidUser.getUsername())
+                                .multiPart("email", newValidUser.getEmail())
+                                .multiPart("password", newValidUser.getPassword())
                         .when()
                                 .post(CREATE_ENDPOINT)
                         .then()
@@ -74,12 +76,17 @@ public class UserApiTests extends TestBase {
         List<CreateUserRequestModel> newUsers = new ArrayList<>();
         step("Adding 5 users to the list", () -> {
             for (int i = 0; i < 5; i++) {
-                newUsers.add(new CreateUserRequestModel(faker.name().username(),
+                CreateUserRequestModel user = new CreateUserRequestModel(
+                        faker.name().username(),
                         faker.internet().emailAddress(),
-                        faker.internet().password()));
+                        faker.internet().password()
+                );
+                newUsers.add(user);
 
-                given(requestSpec).
-                        body(newUsers.get(newUsers.size() - 1))
+                given(requestSpec)
+                        .multiPart("username", user.getUsername())
+                        .multiPart("email", user.getEmail())
+                        .multiPart("password", user.getPassword())
                 .when()
                         .post(CREATE_ENDPOINT)
                 .then()
@@ -128,7 +135,9 @@ public class UserApiTests extends TestBase {
 
         step("Sending POST for first new user creation", () ->
                 given(requestSpec)
-                        .body(newUser)
+                        .multiPart("username", newUser.getUsername())
+                        .multiPart("email", newUser.getEmail())
+                        .multiPart("password", newUser.getPassword())
                 .when()
                         .post(CREATE_ENDPOINT)
                 .then()
@@ -139,7 +148,9 @@ public class UserApiTests extends TestBase {
 
         CreateUserNegativeResponseModel response = step("Sending POST for user creation with non unique username", () ->
                 given(requestSpec)
-                        .body(nonUniqueUser)
+                        .multiPart("username", nonUniqueUser.getUsername())
+                        .multiPart("email", nonUniqueUser.getEmail())
+                        .multiPart("password", nonUniqueUser.getPassword())
                 .when()
                         .post(CREATE_ENDPOINT)
                 .then()
@@ -171,7 +182,9 @@ public class UserApiTests extends TestBase {
 
         step("Sending POST for first new user creation", () ->
                 given(requestSpec)
-                        .body(newUser)
+                        .multiPart("username", newUser.getUsername())
+                        .multiPart("email", newUser.getEmail())
+                        .multiPart("password", newUser.getPassword())
                 .when()
                         .post(CREATE_ENDPOINT)
                 .then()
@@ -183,7 +196,9 @@ public class UserApiTests extends TestBase {
         CreateUserNegativeResponseModel response =
                 step("Sending POST for user creation with non-unique email", () ->
                 given(requestSpec)
-                        .body(nonUniqueUser)
+                        .multiPart("username", nonUniqueUser.getUsername())
+                        .multiPart("email", nonUniqueUser.getEmail())
+                        .multiPart("password", nonUniqueUser.getPassword())
                 .when()
                         .post(CREATE_ENDPOINT)
                 .then()
@@ -210,7 +225,9 @@ public class UserApiTests extends TestBase {
 
         CreateUserNegativeResponseModel response = step("Sending POST user creation with invalid email", () ->
                 given(requestSpec)
-                        .body(newUser)
+                        .multiPart("username", newUser.getUsername())
+                        .multiPart("email", newUser.getEmail())
+                        .multiPart("password", newUser.getPassword())
                 .when()
                         .post(CREATE_ENDPOINT)
                 .then()
