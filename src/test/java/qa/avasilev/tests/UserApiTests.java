@@ -50,6 +50,7 @@ public class UserApiTests extends TestBase {
             assertions.assertThat(postResponse.getDetails().getEmail()).isEqualTo(newValidUser.getEmail());
             assertions.assertThat(postResponse.getDetails().getCreated_at()).isNotBlank();
             assertions.assertThat(postResponse.getDetails().getUpdated_at()).isNotBlank();
+            assertions.assertAll();
         });
 
         GetUserResponseModel[] getResponse =
@@ -67,6 +68,7 @@ public class UserApiTests extends TestBase {
         step("Validating the user data in GET response", () -> {
             assertions.assertThat(getResponse).hasSize(1);
             assertions.assertThat(getResponse[0]).isEqualTo(postResponse.getDetails());
+            assertions.assertAll();
         });
     }
 
@@ -107,6 +109,7 @@ public class UserApiTests extends TestBase {
 
         step("Checking that there are 5 or more users in the list", () -> {
             assertions.assertThat(response.length).isGreaterThanOrEqualTo(5);
+            assertions.assertAll();
         });
 
         step("Checking that added users are present in the response", () -> {
@@ -114,9 +117,10 @@ public class UserApiTests extends TestBase {
                     .map(GetUserResponseModel::getUsername)
                     .toList();
 
-            newUsers.forEach(user ->
-                    assertions.assertThat(responseUsernames).contains(user.getUsername())
-            );
+            newUsers.forEach(user -> {
+                    assertions.assertThat(responseUsernames).contains(user.getUsername());
+                    assertions.assertAll();
+            });
         });
     }
 
@@ -162,6 +166,7 @@ public class UserApiTests extends TestBase {
         step("Verifying error message", () -> {
                     assertions.assertThat(response.isSuccess()).isFalse();
                     assertions.assertThat(response.getMessage()[0]).isEqualTo(NON_UNIQUE_USERNAME_MESSAGE);
+                    assertions.assertAll();
                 }
         );
     }
@@ -211,6 +216,7 @@ public class UserApiTests extends TestBase {
         step("Verifying error message", () -> {
                     assertions.assertThat(response.isSuccess()).isFalse();
                     assertions.assertThat(response.getMessage()[0]).isEqualTo(NON_UNIQUE_EMAIL_MESSAGE);
+                    assertions.assertAll();
                 }
         );
     }
@@ -239,6 +245,7 @@ public class UserApiTests extends TestBase {
         step("Verifying error message", () -> {
                     assertions.assertThat(response.isSuccess()).isFalse();
                     assertions.assertThat(response.getMessage()[0]).isEqualTo("Email is not valid");
+                    assertions.assertAll();
                 }
         );
     }
