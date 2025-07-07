@@ -1,195 +1,200 @@
-# Техническое задание
+# Technical Task
 
-1. Необходимо изучить API и описать все возможные тест кейсы (и/или чек листы) для проверки
-2. Приоритизировать их
-3. Автоматизировать наиболее приоритетные тест кейсы из первой части задания, выложить код автотестов и результаты первой части задания в github
+## Objectives
 
-## Тест-кейсы и чек-листы
+1. Explore the provided API and document all possible test cases and/or checklists.  
+2. Prioritize the test cases.  
+3. Automate the most critical test cases, publish both the automation code and the test documentation in this repository.
+
+## Test Cases and Checklists
 
 ### Priority 1
--   **Успешное создание пользователя с валидными данными.**
--   **Успешное получение списка пользователей.**
--   **Создание пользователя с уже существующим username.**
--   **Создание пользователя с уже существующим email.**
+- **Successful user creation with valid data.**
+- **Successfully retrieving a list of users.**
+- **Attempt to create a user with an existing username.**
+- **Attempt to create a user with an existing email.**
 
 ### Priority 2
--   **Создание пользователя с отсутствующим обязательным полем.**
--   **Создание пользователя с пустым значением обязательного поля.**
--   **Создание пользователя c некорректным форматом email.**
--   **Получение пользователя по /get?id** - не описано в спецификации, иначе приоритет был бы выше
+- **Creating a user with a missing required field.**
+- **Creating a user with an empty required field.**
+- **Creating a user with an invalid email format.**
+- **Retrieving user via `/get?id`** – undocumented in API spec, otherwise would be higher priority.
 
 ### Priority 3
-- **Получение пользователя по /get?username** - не описано в спецификации, иначе приоритет был бы выше
-- **Получение пользователя по /get?email** - не описано в спецификации, иначе приоритет был бы выше
-- **Создание пользователя c username очень большой длины (256 символов)**
-- **Создание пользователя c password очень большой длины (256 символов)**
+- **Retrieving user via `/get?username`** – undocumented.
+- **Retrieving user via `/get?email`** – undocumented.
+- **Creating a user with an excessively long `username` (256 characters).**
+- **Creating a user with an excessively long `password` (256 characters).**
 
 ### Priority 4
-- **Создание пользователя с неописанными параметрами в form-data**
-- **Получение пользователя по /get?password**
-- **Получение пользователя по /get?[параметр] - где параметр не существует**
-- **Получение пользователя по /get?[параметр] - где параметр существует, но имеет невалидное значение**
-- **Запрос на создание пользователя с некорректным content-type (Например, JSON)** - кстати, сработает
+- **Creating a user with undocumented parameters in form-data.**
+- **Retrieving user via `/get?password`.**
+- **Retrieving user using an unknown parameter in `/get?[param]`.**
+- **Retrieving user with an existing parameter but invalid value.**
+- **Submitting JSON instead of form-data (`Content-Type: application/json`) – note: this currently works.**
 
-### Дополнительно
-- Поскольку при запросе /get?[параметр=значение] формируется SQL запрос, нужно тестирование на возможность SQL injection
+### Additional Notes
+- Since the `/get?[param=value]` query directly affects SQL queries, SQL injection testing is required.
 
-## Автоматизированные кейсы
+## Automated Test Cases
 
-#### Примечания
-- Тесты выполняются в несколько потоков
-- Тесты писались полностью независимыми
-- Предполагалось, что мы не сможем создать тестовые данные иначе, чем в самом тесте
+### Notes
+- Tests are executed in parallel threads.
+- Tests are fully independent.
+- Assumes test data can only be created during test execution.
 
-### 1. Успешное создание пользователя с валидными данными
-**Preconditions:**
-- API доступен
+### 1. Successful User Creation with Valid Data
 
-**Step 1**
-- Отправить POST запрос с валидными username, email и password в form-param
+**Preconditions:**  
+- API is available
 
-**Expected result 1**
-- Вернётся ответ с кодом 200, success:true и message: "User Successfully created"
-- В ответ будет содержаться id и данные пользователя, а также не пустые поля "created_at" и "updated_at"
+**Step 1**  
+- Send a POST request with valid `username`, `email`, and `password` as form parameters.
 
-**Step 2**
-- Отправить GET запрос с id пользователя ("/get?id=")
-- Сопоставить полученные в ответе данные с данными отправленными в POST запросе
+**Expected Result 1**  
+- Response with status code `200`, `success: true`, and message `"User Successfully created"`  
+- Response includes a non-null `id`, matching user data, and non-empty `created_at` and `updated_at`.
 
-**Expected result 2**
-- Вернётся ответ с кодом 200, данные ответа совпадут с данными из POST запроса/ответа на него
+**Step 2**  
+- Send a GET request using `/get?id=<user_id>`  
+- Compare the returned data to the POST request input.
 
-> При выполнении теста находится опечатка: "User **Successully** created"
+**Expected Result 2**  
+- Response with status code `200`  
+- All fields match the previously submitted values.
 
-### 2. Успешное получение списка пользователей.
-**Preconditions:**
-- API доступен
+> Typo discovered during test: `"User **Successully** created"`
 
-**Step 1**
-- 5 раз отправить POST запрос с валидными username, email и password в form-param
+### 2. Successfully Retrieving the List of Users
 
-**Expected result 1**
-- 5 раз вернётся ответ с кодом 200
+**Preconditions:**  
+- API is available
 
-**Step 2**
-- Отправить GET запрос без параметров
+**Step 1**  
+- Send 5 POST requests to create users with valid data.
 
-**Expected result 2**
-- Вернётся ответ с кодом 200 и массивом пользователей
-- Пользователей в ответе будет минимум 5
-- Все 5 созданных пользователей будут в списке
+**Expected Result 1**  
+- Each request returns a `200` status code.
 
-### 3. Создание пользователя с уже существующим username.
-**Preconditions:**
-- API доступен
+**Step 2**  
+- Send a GET request with no parameters.
 
-**Step 1**
-- Отправить POST запрос с валидными username, email и password в form-param
+**Expected Result 2**  
+- Response with status code `200`  
+- The array contains at least 5 users, including the ones just created.
 
-**Expected result 1**
-- Вернётся ответ с кодом 200
+### 3. Creating a User with an Existing Username
 
-**Step 2**
-- Отправить POST запрос с валидными email и password и username из первого запроса в form-param
+**Preconditions:**  
+- API is available
 
-**Expected result 2**
-- Вернётся ответ с кодом 400
-- Ответ будет содержать success: false и "message":"This username is taken. Try another."
+**Step 1**  
+- Send a POST request with valid data.
 
-### 4. Создание пользователя с уже существующим email.
-**Preconditions:**
-- API доступен
+**Expected Result 1**  
+- Response with status code `200`
 
-**Step 1**
-- Отправить POST запрос с валидными username, email и password в form-param
+**Step 2**  
+- Send another POST request using the same `username` but a different `email`.
 
-**Expected result 1**
-- Вернётся ответ с кодом 200
+**Expected Result 2**  
+- Response with status code `400`  
+- Response contains `success: false` and `"message": "This username is taken. Try another."`
 
-**Step 2**
-- Отправить POST запрос с валидными username и password и email из первого запроса в form-param
+### 4. Creating a User with an Existing Email
 
-**Expected result 2**
-- Вернётся ответ с кодом 400
-- Ответ будет содержать success: false и "message": "Email already exists"
+**Preconditions:**  
+- API is available
 
-### 5. Создание пользователя c некорректным форматом email.
-> Не приоритетно, но хотелось включить падающий кейс
+**Step 1**  
+- Send a POST request with valid data.
 
-**Preconditions:**
-- API доступен
+**Expected Result 1**  
+- Response with status code `200`
 
-**Step 1**
-- Отправить POST запрос с валидными username и password и email неправильного формата (без "@" и домена) в form-param
+**Step 2**  
+- Send another POST request using the same `email` but a different `username`.
 
-**Expected result 1**
-- Вернётся ответ с кодом 400
-- Ответ будет содержать success: false и сообщение об ошибке
+**Expected Result 2**  
+- Response with status code `400`  
+- Response contains `success: false` and `"message": "Email already exists"`
 
+### 5. Creating a User with Invalid Email Format
 
-## Структура проекта
-~~~
+> Lower priority but includes a failing case.
+
+**Preconditions:**  
+- API is available
+
+**Step**  
+- Send a POST request with a valid `username` and `password` but an invalid `email` (e.g., missing `@` or domain).
+
+**Expected Result**  
+- Response with status code `400`  
+- Contains `success: false` and a relevant error message.
+
+## Project Structure
+
+```
 MF-technical-taks/
 │
 ├── src/
-│   ├── main/             # Основной код проекта (пустой в данном случае)
-│   ├── test/
+│   ├── main/                     # (empty)
+│   └── test/
 │       └── java/qa/avasilev/
 │           ├── helpers/
 │           │   └── CustomAllureListener.java
-│           ├── models/  # DTO и модели ответа
+│           ├── models/          # DTOs and response models
 │           │   ├── CreateUserNegativeResponseModel.java
 │           │   ├── CreateUserPositiveResponseModel.java
 │           │   ├── CreateUserRequestModel.java
 │           │   └── GetUserResponseModel.java
-│           ├── specs/   # Настройка спецификаций RestAssured
+│           ├── specs/           # RestAssured specifications
 │           │   └── UserApiSpec.java
-│           └── tests/   # Тестовые классы
+│           └── tests/           # Test classes
 │               ├── TestBase.java
 │               ├── TestData.java
 │               └── UserApiTests.java
 │       └── resources/
-│           ├── tpl/     # Шаблоны запросов и ответов
+│           ├── tpl/             # Request/response templates
 │           │   ├── request.ftl
 │           │   └── response.ftl
-│           └── junit-platform.properties # Настройки параллельного запуска
-├── .gitignore            # Список файлов и папок для игнорирования в Git
-└──  build.gradle         # Основной файл Gradle
-~~~
+│           └── junit-platform.properties
+├── .gitignore
+└── build.gradle
+```
 
-## Используемые технологии
+## Technologies Used
 
--   **Java**: Основной язык для написания тестов.
--   **JUnit 5**: Фреймворк для модульного тестирования.
--   **RestAssured**: Библиотека для тестирования REST API.
--   **Allure**: Инструмент для создания красивых отчетов о тестировании.
--   **Faker**: Генерация тестовых данных.
--   **AssertJ**: Расширенная библиотека для ассертов.
+- **Java** – Primary language
+- **JUnit 5** – Testing framework
+- **RestAssured** – REST API testing library
+- **Allure** – Test report generation
+- **Faker** – Test data generation
+- **AssertJ** – Advanced assertion library
 
-## Инструкции по запуску
+## How to Run
 
-### Шаги для запуска тестов
+### Run Tests
 
--   Убедитесь, что у вас установлена Java
--   Убедитесь, что у вас установлен Gradle
--   Склонируйте репозиторий:
-~~~
-	git clone <repository-url>
-	cd MF-technical-taks
-~~~
--   Выполните команду для запуска тестов:
-~~~
-	gradle clean test
-~~~
+Make sure you have **Java** and **Gradle** installed.
 
-### Генерация отчетов Allure
+```bash
+git clone <repository-url>
+cd MF-technical-taks
+gradle clean test
+```
 
-- После выполнения тестов выполните команду для подготовки отчетов:
-~~~
-    gradle allureReport
-~~~
-- Для просмотра отчета запустите:
-~~~
-    gradle allureServe
-~~~
-Отчет откроется в Вашем браузере.
+### Generate Allure Report
+
+```bash
+gradle allureReport
+```
+
+### View the Report
+
+```bash
+gradle allureServe
+```
+
+The report will open in your browser.
